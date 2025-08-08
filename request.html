@@ -1,0 +1,136 @@
+{% extends "layout_home.html"%} 
+{% load static %}
+{% load custom_filters %}
+{% block home_title %}
+    Support
+{% endblock %} 
+
+{% block home_content %}
+<main class="container mx-auto my-8 w-1/3">
+    <section class="bg-white p-6 shadow-md rounded-md">
+      <h2 class="text-green-600 text-2xl font-bold mb-4">Điền yêu cầu hỗ trợ</h2>
+      <p class="mb-6">Hãy cho chúng tôi biết yêu cầu của bạn, và chúng tôi sẽ phản hồi sớm nhất có thể</p>
+
+      <form class="space-y-4" method="post" action="{% url 'support' %}">
+        {% csrf_token %}
+        <!-- Full Name Field -->
+        <div>
+            <label for="full_name" class="block text-sm font-medium text-gray-700">
+                Họ và tên
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="text" id="full_name" name="customer_name" placeholder="Nguyễn Văn A" 
+                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+        </div>
+
+        <!-- Phone Number Field -->
+        <div>
+            <label for="phone" class="block text-sm font-medium text-gray-700">
+                Số điện thoại
+                <span class="text-red-500">*</span>
+            </label>
+            <input type="tel" id="phone" name="phone_number" placeholder="0905000000" required
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
+        </div>
+
+        <!-- Service Dropdown -->
+        <div>
+            <label for="service" class="block text-sm font-medium text-gray-700">
+                Dịch vụ
+                <span class="text-red-500">*</span>
+            </label>
+            <select id="service" name="service" class="mt-1 block w-full border-2 border-gray-300 rounded-md shadow-sm">
+                <option value="-1">Chọn dịch vụ</option>
+                {% for service in context.services %}
+                    <option value="{{service.service_id}}">{{service.service_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+          <label for="request_content" class="block text-sm font-medium text-gray-700">
+                Nội dung yêu cầu
+                <span class="text-red-500">*</span>
+            </label>
+          <textarea id="request_content" name="request_content" rows="5" placeholder="Vui lòng mô tả yêu cầu của bạn" required
+                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm p-2"></textarea>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-right">
+          <button id="openModalBtn" type="submit" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">
+                Gửi yêu cầu &rightarrow;
+          </button>
+        </div>
+      </form>
+    </section>
+</main>
+
+{% if context.isShowModal %}
+<!-- Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white w-full max-w-lg p-6 rounded-lg shadow-lg relative">
+      <!-- Close Button -->
+      <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
+        &times;
+      </button>
+
+      <!-- Modal Content -->
+      <div class="text-center">
+        <h2 class="text-green-600 text-2xl font-bold mb-2">Chúng tôi đã nhận được yêu cầu của bạn.</h2>
+        <p class="text-gray-600 mb-6">Đội ngũ hỗ trợ sẽ liên hệ với bạn sớm nhất có thể!</p>
+        
+        <div class="text-left border-t pt-4">
+          <h3 class="text-green-600 font-semibold mb-2">Thông tin yêu cầu</h3>
+          
+          <!-- Request Details -->
+          <div class="space-y-2">
+            <p class="grid grid-cols-2">
+              <strong>Họ và tên:</strong>
+              {{context.customer}}
+            </p>
+            <p class="grid grid-cols-2">
+              <strong>Số điện thoại:</strong>
+              {{context.phone|phoneformat:"10"}}
+            </p>
+            <p class="grid grid-cols-2">
+              <strong>Dịch vụ:</strong> 
+              {{context.service.service_name}}
+            </p>
+            <p class="grid grid-cols-2">
+              <strong>Ngày gửi:</strong> 
+              {{context.request_date|date:"Y-m-d H:i A"}}
+            </p>
+            <p class="grid grid-cols-2">
+              <strong>Nội dung yêu cầu:</strong> 
+              {{context.content}}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endif %}
+<!-- Script to handle modal open/close -->
+<script>
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const confirmationModal = document.getElementById('confirmationModal');
+
+    // Function to open modal
+    openModalBtn.addEventListener('click', () => {
+      confirmationModal.classList.remove('hidden');
+    });
+
+    // Function to close modal
+    closeModalBtn.addEventListener('click', () => {
+      confirmationModal.classList.add('hidden');
+    });
+
+    // Close modal if user clicks outside the modal content
+    window.addEventListener('click', (e) => {
+      if (e.target === confirmationModal) {
+        confirmationModal.classList.add('hidden');
+      }
+    });
+</script>
+{% endblock %}

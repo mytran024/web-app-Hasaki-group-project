@@ -1,0 +1,134 @@
+{% extends "layout_content.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content_title %} Customers {% endblock %}
+
+{% block detail %}
+<!-- Main Content -->
+<div class="flex-1 p-6 bg-white w-full">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-green-700">Danh sách khách hàng</h1>
+        {% include "header.html" with employee=context.employee %}
+    </div>
+
+    <!-- Search -->
+    <div class="mb-4 flex flex-row">
+        <input id="searchInput" name="search" type="search" 
+            class="w-1/3 h-8 p-2 border border-gray-300 rounded-s-md text-sm border-r-0" placeholder="Search"/>
+        <button class="rounded-e-md w-8 h-8 bg-transparent border border-y-gray-300 px-1">
+            <img src="{% static 'img/search.png' %}" alt="magnifying glass" 
+                class="w-5 h-5 bg-transparent"/>
+        </button>
+        <div class="absolute right-5 border bg-green-50 rounded-md">
+            <label>Sắp xếp:</label>
+            <select class="ml-3 bg-transparent">
+                <option value="-1" selected>Chọn tiêu chí</option>
+                <option value="0">Khách hàng mới</option>
+                <option value="1">Cuộc hẹn gần nhất</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white border border-gray-300 rounded-lg">
+            <thead>
+                <tr class="text-center bg-stone-800 text-white">
+                    <th class="px-4 py-2 border-2 w-14">ID</th>
+                    <th class="px-2 py-2 border-2 w-1/4">Tên khách hàng</th>
+                    <th class="px-2 py-2 border-2 w-1/4">Email</th>
+                    <th class="px-2 py-2 border-2">Số điện thoại</th>
+                    <th class="px-2 py-2 border-2">Ngày tạo</th>
+                    <th class="px-2 py-2 border-2">Xem chi tiết</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in context.customers %}
+                    <tr class="hover:bg-green-300 hover:text-green-900 even:bg-gray-100 odd:bg-white">
+                        <td class="bg-gray-300 text-black text-center px-4 py-2 border-2 w-14">{{customer.customer_id|stringformat:"03d"}}</td>
+                        <td class="text-left px-2 py-2 border-2 w-1/4">{{customer.customer_name}}</td>
+                        <td class="text-left px-2 py-2 border-2 w-1/4">{{customer.email}}</td>
+                        <td class="text-left px-2 py-2 border-2">{{customer.phone_number|phoneformat:"10"}}</td>
+                        <td class="text-left px-2 py-2 border-2">{{customer.created_date|date:"Y/m/d H:i A"}}</td>
+                        <td class="text-center px-2 py-2 border-2">
+                            <div class="space-x-3 flex flex-row mx-auto justify-center">
+                                <a href="/customers/detail/{{customer.customer_id}}" class="text-green-900 hover:underline text-center">Chi tiết</a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr class="text-center">
+                        <td></td>
+                        <td></td>
+                        <td>No data available.</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if context.customers|length > 0 %}
+    <!-- Pagination controls -->
+    <div class="absolute mt-4 right-5">
+        <nav aria-label="Page navigation">
+            <ul class="inline-flex items-center space-x-1">
+                {% if context.customers.has_previous %}
+                <li>
+                    <a href="?page={{ context.customers.previous_page_number }}" 
+                        class="px-3 py-2 bg-gray-200 rounded">
+                        &lt;Previous
+                    </a>
+                </li>
+                {% endif %}
+                
+                <li>
+                    <span class="px-3 py-2">
+                        <input type="text" id="current_page" class="w-8 h-5 border-2 border-gray-400 text-black text-center" 
+                            value="{{ context.customers.number }}"/>
+                        /
+                        <input type="text" id="total_pages" class="w-8 h-5 text-black text-center bg-transparent" disabled 
+                            value="{{ context.customers.paginator.num_pages }}"/>
+                    </span>
+                </li>
+
+                {% if context.customers.has_next %}
+                <li>
+                    <a href="?page={{ context.customers.next_page_number }}" class="px-3 py-2 bg-gray-200 rounded">
+                        Next &gt;
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+<script type="text/javascript">
+    const page_no_input = document.getElementById("current_page");
+    const total_pages_input = document.getElementById("total_pages");
+
+    page_no_input.addEventListener("keydown", function(e){
+        if(e.keyCode === 13){ // Enter key
+            event.preventDefault(); 
+            const page_no = page_no_input.value;
+            const total_pages = total_pages_input.value;
+
+            if (Number(page_no) <= 0 || Number(page_no) > Number(total_pages)){
+                page_no_input.classList.add("border-red-500");
+                page_no_input.classList.add("text-red-500");
+                return;
+            }
+            
+            page_no_input.classList.remove("border-red-500");
+            page_no_input.classList.remove("text-red-500");
+            window.location.href = `/customers?page=${page_no}`;
+        }
+    });
+
+    page_no_input.addEventListener("focus", () => {
+        page_no_input.select();
+    });
+</script>
+{% endblock %}

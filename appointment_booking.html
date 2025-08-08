@@ -1,0 +1,169 @@
+{% extends "layout_home.html"%} 
+{% load static %}
+
+{% block home_title %}
+    Appointment Booking 
+{% endblock %} 
+
+{% block home_content %}
+<!-- Container for the appointment form -->
+<div class="w-auto py-10 mx-20">
+  <!-- Title -->
+  <h2 class="text-2xl font-bold text-green-700 mb-4">Đặt lịch hẹn dịch vụ</h2>
+  <p class="text-gray-600 mb-8">
+    Cảm ơn quý khách, vui lòng lưu ý thời gian đặt lịch hẹn có thể thay đổi tùy vào tình hình thực tế
+  </p>
+
+  <!-- Form -->
+  <form class="grid grid-cols-1 md:grid-cols-2 gap-6" method="post" action="/booking">
+    {% csrf_token %}
+    <!-- Left Column -->
+    <div>
+      <!-- Name -->
+      <label for="name" class="block text-sm font-medium text-gray-700">Họ và tên</label>
+      <input type="text" id="name" name="name" placeholder="Nguyễn Văn A"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+            focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+
+      <!-- Phone Number -->
+      <label for="phone" class="block text-sm font-medium text-gray-700 mt-4">Số điện thoại</label>
+      <input type="text" id="phone" name="phone" placeholder="0905000000"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+            focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+
+      <!-- Email -->
+      <label for="email" class="block text-sm font-medium text-gray-700 mt-4">Email</label>
+      <input type="email" id="email" name="email" placeholder="nguyenvana@gmail.com"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+        focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+
+      <!-- Notes -->
+      <label for="notes" class="block text-sm font-medium text-gray-700 mt-4">Ghi chú</label>
+      <textarea id="notes" placeholder="Lời nhắn" name="note" rows="5"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm 
+            focus:ring-green-500 focus:border-green-500 sm:text-sm"></textarea>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+      <!-- Service -->
+      <label for="service" class="block text-sm font-medium text-gray-700">Dịch vụ</label>
+      <select id="service" name="service"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm 
+            focus:ring-green-500 focus:border-green-500 sm:text-sm">
+        <option value="-1">Chọn dịch vụ</option>
+        {% for service in context.services %}
+          <option value="{{service.service_id}}">{{service.service_name}}</option>
+        {% endfor %}
+        <!-- Add more options as needed -->
+      </select>
+
+      <!-- Appointment Date -->
+      <label for="date" class="block text-sm font-medium text-gray-700 mt-4">Ngày đặt hẹn</label>
+      <input type="date" id="date" name="appointment_date" class="mt-1 block w-full px-3 py-2 border border-gray-300 
+            bg-white rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+
+      <!-- Start Time -->
+      <label for="start-time" 
+            class="block text-sm font-medium text-gray-700 mt-4">Thời gian bắt đầu dịch vụ</label>
+      <input type="time" id="start-time" name="start_time"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white 
+            rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm"/>
+
+      <!-- Service Time -->
+      <label for="service_time" 
+            class="block text-sm font-medium text-gray-700 mt-4">Thời gian sử dụng dịch vụ</label>
+      <select id="service_time" name="service_time"
+        class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white 
+            rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm">
+            <option value="0.5">30 phút</option>
+            <option value="1">60 phút</option>
+            <option value="1.5">90 phút</option>
+      </select>
+
+      <!-- Submit Button -->
+        <div class=" flex md:col-span-2 mt-5 justify-end">
+            <button type="submit"
+            class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white 
+                    font-bold py-2 px-6 rounded-md shadow-sm transition duration-300">
+            Hoàn thành &rarr;
+            </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+{% if context.isSuccess %}
+<div>
+  <!-- Success Modal -->
+  <div id="successModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 w-auto h-auto">
+    <div class="bg-white rounded-lg p-8 shadow-lg max-w-md relative w-1/2">
+      
+      <!-- Close Button -->
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <!-- Modal Content -->
+      <h1 class="text-xl font-bold text-green-600 mb-4">Quý khách đã đặt lịch hẹn thành công!</h1>
+      <p class="mb-4">Dưới đây là thông tin đặt hẹn chi tiết của bạn:</p>
+
+      <div class="space-y-2">
+        <div class="flex justify-between">
+          <span class="font-semibold">Họ và tên:</span>
+          <span class="col-span-2">{{ context.customer_name}}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Số điện thoại:</span>
+          <span>{{ context.phone }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Email:</span>
+          <span>{{ context.email }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Dịch vụ:</span>
+          <span>{{ context.service }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Lịch hẹn:</span>
+          <span>{{ context.appointment_date }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Thời gian bắt đầu:</span>
+          <span>{{ context.start_time }} {{ context.start_clock_type }}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="font-semibold">Thời gian kết thúc:</span>
+          <span>{{ context.end_time }} {{ context.end_clock_type }}</span>
+        </div>
+      </div>
+
+      <!-- Success Message Footer -->
+      <div class="mt-6 flex justify-center">
+        <button onclick="closeModal()" class="px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+<script>
+    const date = document.getElementById('date');
+    date.value = new Date().toISOString().split('T')[0];
+
+    // Functions to handle modal open/close
+    function openModal() {
+      document.getElementById('successModal').classList.remove('hidden');
+      document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+      document.getElementById('successModal').classList.add('hidden');
+      document.body.classList.remove('modal-open');
+    }
+</script>
+{% endblock %}

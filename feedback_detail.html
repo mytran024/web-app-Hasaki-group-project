@@ -1,0 +1,163 @@
+{% extends "layout_content.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content_title %}Feedback Detail{% endblock %}
+{% block detail %}
+<!-- Main Content -->
+<div class="w-full py-5 px-4 flex flex-col">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-2xl font-bold text-green-700">Chi tiết phản hồi</h1>
+        {% include "header.html" with employee=context.employee %}
+    </div>
+    <div class="flex flex-row">
+        <div class="w-10/12">
+            <div class="flex flex-col border border-gray-200">
+                <div class="grid grid-cols-3">
+                    <div class="text-gray-700">
+                        <strong>Khách hàng:</strong> 
+                        {{context.customer.customer_name}}
+                    </div>
+                    <div class="text-gray-700">
+                        <strong>Số điện thoại:</strong>
+                         {{context.customer.phone_number|phoneformat:"10"}}
+                    </div>
+                    <div class="text-gray-700">
+                        <strong>Độ ưu tiên:</strong> 
+                        {% if context.feedback.prioritize == 0 %}
+                            <span class="text-yellow-700 border bg-yellow-300 rounded-lg p-1 w-20 text-center">Thấp</span>
+                        {% elif context.feedback.prioritize == 1 %}
+                            <span class="text-sky-700 border bg-sky-300 rounded-lg p-1 w-20 text-center">Trung bình</span>
+                        {% else %}
+                            <span class="text-red-700 border bg-red-300 rounded-lg p-1 w-20 text-center">Cao</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="grid grid-cols-3">
+                    <div class="text-gray-700">
+                        <strong>ID yêu cầu:</strong> 
+                        {{context.feedback.request_id}}
+                    </div>
+                    <div class="text-gray-700">
+                        <strong>Ngày tạo:</strong> 
+                        {{context.feedback.request_date|date:'Y-m-d H:i A'}}
+                    </div>
+                    <div class="text-gray-700">
+                        <strong>Tiêu đề yêu cầu:</strong> 
+                        {{context.service.service_name}}
+                    </div>
+                </div>
+            </div>
+            <!-- Request Details -->
+            <div class="bg-white p-6 rounded-lg shadow-lg mb-5 mt-5">
+                <p class="text-gray-700 mb-3"><strong>Nội dung yêu cầu:</strong></p>
+                <p class="text-gray-500 mb-3">{{context.feedback.request_content}}</p>
+                <div class="flex space-x-4 flex-row items-center">
+                    Trạng thái hiện tại:
+                    <button class="ml-2 px-4 py-2 rounded-lg 
+                        {% if context.feedback.status == 1 %} bg-green-500 text-white {% else %} bg-gray-300 text-gray-700 {% endif %}">
+                        Đang xử lý
+                    </button>
+                    <button class="px-4 py-2 rounded-lg 
+                        {% if context.feedback.status == 2 %} bg-green-500 text-white {% else %} bg-gray-300 text-gray-700 {% endif %}">
+                        Đã xử lý
+                    </button>
+                    <button class="px-4 py-2 rounded-lg 
+                        {% if context.feedback.status == 0 %} bg-green-500 text-white {% else %} bg-gray-300 text-gray-700 {% endif %}">
+                        Hoãn lại
+                    </button>
+                </div>
+            </div>
+        
+            <!-- User Replies -->
+            <div class="flex flex-col bg-white p-6 rounded-lg shadow-lg mb-5 max-h-80 overflow-y-auto">
+                <!--Align employee's reply to right side-->
+                <div class="flex mt-2 flex-row-reverse rounded-lg space-x-2">
+                    <div class="w-2 bg-green-600 rounded-e-lg h-12"></div>
+                    <div class="flex space-x-4 flex-col">
+                        <p class="text-green-500">
+                            <strong>{{context.employee.employee_name}}</strong>
+                            <span class="text-gray-400 text-sm ml-2">{% now "Y-m-d H:i:s" %}</span>
+                        </p>
+                        <p class="text-gray-500 text-wrap max-w-80">Bạn đã thử tắt và bật lại điện thoại chưa?</p>
+                    </div>
+                </div>
+                <!--Align customer's reply to left side-->
+                <div class="flex mt-2 flex-row rounded-lg space-x-2">
+                    <div class="w-2 bg-sky-600 rounded-s-lg h-12"></div>
+                    <div class="flex space-x-4 flex-col">
+                        <p class="text-sky-500">
+                            <strong>Lê Ngọc Diệp</strong>
+                            <span class="text-gray-400 text-sm ml-2">{% now "Y-m-d H:i:s" %}</span>
+                        </p>
+                        <p class="text-gray-500 text-wrap max-w-80">Cảm ơn bạn. Tôi đã khắc phục được rồi.</p>
+                    </div>
+                </div>
+                <!--Align employee's reply to right side-->
+                <div class="flex mt-2 flex-row-reverse rounded-lg space-x-2">
+                    <div class="w-2 bg-green-600 rounded-e-lg h-12"></div>
+                    <div class="flex space-x-4 flex-col">
+                        <p class="text-green-500">
+                            <strong>{{context.employee.employee_name}}</strong>
+                            <span class="text-gray-400 text-sm ml-2">{% now "Y-m-d H:i:s" %}</span>
+                        </p>
+                        <p class="text-gray-500 text-wrap w-80">Bạn có gặp vấn đề nào khác nữa không?</p>
+                    </div>
+                </div>
+                <!--Align customer's reply to left side-->
+                <div class="flex mt-2 flex-row rounded-lg space-x-2">
+                    <div class="w-2 bg-sky-600 rounded-s-lg h-12"></div>
+                    <div class="flex space-x-4 flex-col">
+                        <p class="text-sky-500">
+                            <strong>Lê Ngọc Diệp</strong>
+                            <span class="text-gray-400 text-sm ml-2">{% now "Y-m-d H:i:s" %}</span>
+                        </p>
+                        <p class="text-gray-500 text-wrap w-80">Hiện tại thì tôi không gặp vấn đề nào khác cả.</p>
+                    </div>
+                </div>
+                <!--Align employee's reply to right side-->
+                <div class="flex mt-2 flex-row-reverse rounded-lg space-x-2">
+                    <div class="w-2 bg-green-600 rounded-e-lg h-12"></div>
+                    <div class="flex space-x-4 flex-col">
+                        <p class="text-green-500">
+                            <strong>{{context.employee.employee_name}}</strong>
+                            <span class="text-gray-400 text-sm ml-2">{% now "Y-m-d H:i:s" %}</span>
+                        </p>
+                        <p class="text-gray-500 text-wrap w-80">Ok bạn. Nếu có bất kỳ vấn đề nào về Spa của chúng tôi thì xin hãy chia sẻ. Chúng tôi rất mong nhận được đánh giá từ bạn.</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Input Section -->
+            <div class="py-1 bg-transparent border-t flex flex-row justify-center items-center space-x-2 w-1/2 absolute bottom-0">
+                <input type="text" placeholder="Type your message here..." class="flex-1 p-2 border rounded-lg"
+                    value="{{data.customer.customer_id}}">
+                <button class="p-2 bg-transparent text-white rounded-full">
+                    <img src="{% static 'img/send-message.png' %}" alt="send message" class="bg-transparent w-5 h-5">
+                </button>
+            </div>
+        </div>
+
+        <!-- Status & Priority -->
+        <div class="flex flex-col justify-start items-center w-2/12 h-full">
+            <div class="w-1/2">
+            <label class="block text-gray-700 mb-2">Trạng thái</label>
+            <select class="flex w-32 h-8 p-1 bg-gray-100 rounded-lg items-center text-sm">
+                <option>Chọn trạng thái</option>
+                <option value="0">Hoãn lại</option>
+                <option value="1">Đang xử lý</option>
+                <option value="2">Đã xử lý</option>
+            </select>
+            </div>
+            <div class="w-1/2">
+            <label class="block text-gray-700 mb-2">Ưu tiên</label>
+            <select class="flex w-32 h-8 p-1 bg-gray-100 rounded-lg items-center text-sm">
+                <option>Chọn ưu tiên</option>
+                <option value="0">Thấp</option>
+                <option value="1">Trung bình</option>
+                <option value="2">Cao</option>
+            </select>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

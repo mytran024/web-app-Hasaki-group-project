@@ -1,0 +1,60 @@
+{% extends "layout_content.html" %}
+{% load static %}
+{% block content_title %}Personal Work Shifts{% endblock %}
+{% block detail %}
+<!-- Main Content -->
+<div class="flex-1 p-8 flex flex-col">
+    <div class="flex-row">
+        <!-- Header Section -->
+      <div class="flex justify-between items-center mb-4">
+        <h1 class="text-3xl font-bold text-green-700">Lịch làm việc cá nhân</h1>
+        {% include "header.html" with employee=context.employee %}
+      </div>
+
+      <!-- Week Navigation -->
+      <div class="flex justify-between items-center mb-6">
+        <input type="month" id="date_filter" class="text-gray-500" value="{{context.current_date}}" readonly>
+        <div class="bg-transparent px-4 py-2 flex flex-row  border-2 border-gray-300 rounded-xl">
+          Tuần
+          <select name="week" id="week_number" class="ml-2 bg-white w-auto text-center" onchange="fetchData()">
+            {% for i in context.weeks %}
+            <option value="{{i}}" {% if context.week_number == i %} selected {% endif %}>Tuần {{i}}</option>
+            {% endfor %}
+          </select>
+        </div>
+    </div>
+    <div class="w-full flex flex-row justify-center space-x-5 mb-2">
+      <div class="text-yellow-500 flex flex-row">
+        <div class="w-5 h-5 bg-yellow-500 mr-2"></div>
+        Có ca làm việc
+      </div>
+      <div class="text-black flex flex-row">
+        <div class="w-5 h-5 bg-white mr-2"></div>
+        Không có ca làm việc
+      </div>
+    </div>
+    <table class="w-full bg-gray-300">
+      <thead>
+        <tr class="h-10">
+          <th class="border border-gray-200">Thứ</th>
+          <th class="border border-gray-200">Ngày</th>
+          <th class="border border-gray-200">Sáng</th>
+          <th class="border border-gray-200">Chiều</th>
+          <th class="border border-gray-200">Tối</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for dt in context.data %}
+        <tr class="border border-gray-200 h-10">
+          <td class="w-1/6 text-center border border-gray-200">{{dt.day|date:'l'}}</td>
+          <td class="w-1/6 text-center border border-gray-200">{{dt.day|date:'d/m'}}</td>
+          <td class="w-1/6 border border-gray-200 {% if dt.is_morning %} bg-yellow-500 text-white {% else %} bg-white text-black {% endif %}"></td>
+          <td class="w-1/6 border border-gray-200 {% if dt.is_afternoon %} bg-yellow-500 text-white {% else %} bg-white text-black {% endif %}"></td>
+          <td class="w-1/6 border border-gray-200 {% if dt.is_evening %} bg-yellow-500 text-white {% else %} bg-white text-black {% endif %}"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+<script src="{% static 'js/utilities.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends "layout_content.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content_title %} Customer's Detail {% endblock %}
+
+{% block detail %}
+<!-- Main Wrapper -->
+<div class="flex h-screen w-10/12 bg-white">
+    <!-- Content Area -->
+    <main class="flex-1 p-10">
+        <!-- Header with staff info -->
+        <div class="flex justify-between items-center mb-10">
+            <div class="flex flex-row space-x-2">
+                <button onclick="backToPrevious()" class="text-xl font-bold w-5 h-5 border-0 bg-transparent">
+                    &Leftarrow;
+                </button>
+                <h1 class="text-2xl font-semibold text-gray-800">Chi tiết</h1>
+            </div>
+            {% include "header.html" with employee=context.employee %}
+        </div>
+        
+        <!-- Customer details section -->
+        <div class="flex flex-col flex-grow space-y-5">
+            <button onclick="showCustomerInfo()" class="flex items-center justify-between w-full text-gray-700 bg-orange-300 p-2 rounded-md">
+                <span class="font-medium flex flex-row">
+                    Khách hàng
+                </span>
+                <svg id="dropDownCustomerInfo" class="w-5 h-5 transition-transform duration-200 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="customerInfo" class="bg-white rounded-lg shadow-lg mb-10 flex flex-row">
+                <div class="bg-green-600 w-3 rounded-s-lg"></div>
+                <div class="p-4">
+                    <div class="flex flex-row justify-between items-center mb-4">
+                        <div class="flex flex-row text-xl">
+                            <div class="font-bold">Khách hàng:</div>
+                            <div class="text-green-700 ml-5 font-bold hover:underline hover:italic">{{context.customer.customer_name}}</div>
+                        </div>
+                        <div class="absolute right-14">
+                            {% if context.customer.is_delete == 0 %}
+                            <button onclick="openDeleteConfirmation()" class="text-center text-white p-2 space-x-1 bg-red-600 w-28 border rounded-lg flex flex-row">
+                                <img src="{% static 'img/delete.png' %}" class="w-5 h-5"/>
+                                <div>Xóa</div>
+                            </button>
+                            <button onclick="openEditInformation()" class="text-center text-white p-2 space-x-1 bg-green-600 w-28 border rounded-lg flex flex-row">
+                                <img src="{% static 'img/edit.png' %}" class="w-5 h-5"/>
+                                <div>Chỉnh sửa</div>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="grid grid-cols-2 text-gray-700">
+                            <strong>Mã khách hàng:</strong>
+                            <div>{{ context.customer.customer_id|stringformat:"03d" }}</div>
+                        </div>
+                        <div class="grid grid-cols-2 text-gray-700">
+                            <strong>Số điện thoại:</strong>
+                            <div>{{ context.customer.phone_number|phoneformat:"10" }}</div>    
+                        </div>
+                        <div class="grid grid-cols-2 text-gray-700">
+                            <strong>Email:</strong> 
+                            <div>{{ context.customer.email }}</div>
+                        </div>
+                        <div class="grid grid-cols-2 text-gray-700">
+                            <strong>Ngày tạo:</strong> 
+                            <div>{{ context.customer.created_date|date:"Y/m/d H:i A"}}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Deletion Modal Structure -->
+            <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center">
+                <div class="bg-white rounded-lg shadow-lg w-1/3">
+                    <div class="p-6">
+                        <h2 class="text-xl font-semibold mb-4">Bạn có chắc chắn muốn xóa thông tin khách hàng 
+                            <span class="text-lg text-green-500 font-bold">{{context.customer.customer_name}}</span> không?
+                        </h2>
+                    </div>
+                    <div class="flex justify-end p-4 border-t">
+                        <button class="px-4 py-2 bg-red-600 rounded-lg hover:bg-red-700 mr-2" onclick="closeDeleteConfirmation()">No</button>
+                        
+                        <!-- Form to confirm deletion -->
+                        <form id="deleteForm" method="POST" action="/customers/delete/{{context.customer.customer_id}}">
+                            {% csrf_token %}
+                            <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                Yes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Background -->
+            <div id="editModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden">
+                <!-- Modal Box -->
+                <div class="bg-white w-96 rounded-lg shadow-lg p-6 relative">
+                <h2 class="text-xl font-semibold mb-4">Chỉnh sửa thông tin</h2>
+                
+                <!-- Close Button -->
+                <button onclick="closeEditInformation()" class="absolute top-3 right-3 text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Form -->
+                <form method="post" action="/customers/edit/{{context.customer.customer_id}}">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" id="customer_name" name="customer_name" 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none 
+                                focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                            value="{{context.customer.customer_name}}" readonly>
+                    </div>
+                    <div class="mb-4">
+                        <label for="phone_number" class="block text-sm font-medium text-gray-700">Name</label>
+                        <input type="text" id="phone_number" name="phone_number" 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none 
+                                focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                            value="{{context.customer.phone_number|phoneformat:"10"}}">
+                    </div>
+                    <div class="mb-4">
+                        <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
+                        <input type="email" id="email" name="email" 
+                            class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none 
+                                focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                            value="{{context.customer.email}}">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 mr-2" onclick="closeEditInformation()">Hủy</button>
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">Lưu</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment section -->
+        <div class="flex flex-col flex-grow space-y-5 mt-2">
+            <button onclick="showAppointmentInfo()" class="flex items-center justify-between w-full text-gray-700 bg-orange-300 p-2 rounded-md">
+                <span class="font-medium flex flex-row">
+                    Lịch hẹn
+                </span>
+                <svg id="dropDownAppointmentInfo" class="w-5 h-5 transition-transform duration-200 transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="appointmentInfo" class="flex flex-col w-full space-y-2">
+                <div class="flex flex-row">
+                    <div class="flex flex-row space-x-2">
+                        <label for="sort">Sắp xếp:</label>
+                        <select id="sort" class="w-auto border-2 border-gray-200 rounded-md">
+                            <option value="0" selected>Gần nhất</option>
+                            <option value="1">Cũ nhất</option>
+                        </select>
+                    </div>
+                    <input type="date" name="filterDate" id="filterDate" value="{{context.filterDate}}"
+                        class="absolute right-10"/>
+                </div>
+                
+                <!-- Appointment cards -->
+                <div class="grid grid-cols-5 gap-5">
+                    {% for appointment in context.appointments %}
+                        <!-- Appointment Card Example -->
+                        <div class="bg-white rounded-lg shadow-lg border border-green-500 flex flex-row">
+                        {% if appointment.status == 0 %}
+                            <div class="w-2 bg-red-500 rounded-s-lg"></div>
+                        {% elif appointment.status == 1 %}
+                            <div class="w-2 bg-yellow-500 rounded-s-lg"></div>
+                        {% else %}
+                            <div class="w-2 bg-green-500 rounded-s-lg"></div>
+                        {% endif %}
+
+                        <div class="p-4">
+                            <p class="text-gray-500">
+                                Schedule:
+                                <span>{{ appointment.start_time | date:"H:i"}} - {{appointment.end_time | date:"H:i"}}</span>
+                            </p>
+                            <p class="text-gray-600">
+                                Status:
+                                {% if appointment.status == 0 %}
+                                    <span class="text-red-500 text-sm italic font-semibold">Đã hủy</span>
+                                {% elif appointment.status == 1 %}
+                                    <span class="text-yellow-500 text-sm italic font-semibold">Chưa hoàn thành</span>
+                                {% else %}
+                                    <span class="text-green-500 text-sm italic font-semibold">Hoàn thành</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if context.appointments|length == 0 %}
+                <div class="flex flex-row w-full mx-auto text-center justify-center italic font-bold">No appointment.</div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+<script type="text/javascript">
+    let isOpenCustomerInfo = true;
+    let isOpenAppointmentInfo = true;
+    const filter_date = document.getElementById('filterDate');
+
+    function backToPrevious(){
+        window.location.href = "/customers";
+    }
+
+    function openDeleteConfirmation(){
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.classList.remove('hidden');
+    }
+
+    function closeDeleteConfirmation(){
+        const deleteModal = document.getElementById('deleteModal');
+        deleteModal.classList.add('hidden');
+    }
+
+    function openEditInformation(){
+        const editForm = document.getElementById('editModal');
+        editForm.classList.remove('hidden');
+    }
+
+    function closeEditInformation(){
+        const editForm = document.getElementById('editModal');
+        editForm.classList.add('hidden');
+    }
+
+    const showCustomerInfo = () => {
+        const dropDownCustomerInfo = document.getElementById('dropDownCustomerInfo');
+        const customerInfo = document.getElementById('customerInfo');
+
+        if (dropDownCustomerInfo.classList.contains('rotate-180')){
+            dropDownCustomerInfo.classList.remove('rotate-180');
+        }
+        else{
+            dropDownCustomerInfo.classList.add('rotate-180');
+        }
+
+        isOpenCustomerInfo = !isOpenCustomerInfo;
+        
+        if(!isOpenCustomerInfo){
+            customerInfo.classList.add('hidden');
+        }
+        else{
+            customerInfo.classList.remove('hidden');
+        }
+    }
+
+    const showAppointmentInfo = () => {
+        const dropDownAppointmentInfo = document.getElementById('dropDownAppointmentInfo');
+        const appointmentInfo = document.getElementById('appointmentInfo');
+
+        if (dropDownAppointmentInfo.classList.contains('rotate-180')){
+            dropDownAppointmentInfo.classList.remove('rotate-180');
+        }
+        else{
+            dropDownAppointmentInfo.classList.add('rotate-180');
+        }
+
+        isOpenAppointmentInfo = !isOpenAppointmentInfo;
+        
+        if(!isOpenAppointmentInfo){
+            appointmentInfo.classList.add('hidden');
+        }
+        else{
+            appointmentInfo.classList.remove('hidden');
+        }
+    }
+
+    filter_date.addEventListener('keydown', function(e){
+        if (e.keyCode === 13){
+            e.preventDefault();
+            date_value = filter_date.value;
+            window.location.href = window.location.href.split("?")[0] + `?year=${date_value.split('-')[0]}&month=${date_value.split('-')[1]}&day=${date_value.split('-')[2]}`
+        }
+    })
+</script>
+{% endblock %}
